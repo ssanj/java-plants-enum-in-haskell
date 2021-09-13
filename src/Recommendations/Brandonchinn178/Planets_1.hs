@@ -24,11 +24,6 @@ newtype Mass = Mass Double
 newtype Radius = Radius Double
 
 
-newtype SurfaceGravity = SurfaceGravity Double
-
-
-newtype SurfaceWeight = SurfaceWeight Double deriving Show
-
 gConstant :: Double
 gConstant = 6.67300E-11
 
@@ -55,22 +50,22 @@ mass URANUS  = Mass 8.686e+25
 mass NEPTUNE = Mass 1.024e+26
 
 
-surfaceGravity :: Planet -> SurfaceGravity
+surfaceGravity :: Planet -> Double
 surfaceGravity planet =
     let (Mass m)   = mass planet
         (Radius r) = radius planet
-    in SurfaceGravity $ gConstant * m / (r * m)
+    in gConstant * m / (r * m)
 
 
-surfaceWeight :: Mass -> Planet -> SurfaceWeight
+surfaceWeight :: Mass -> Planet -> Double
 surfaceWeight (Mass otherMass) planet =
-    let (SurfaceGravity sg)= surfaceGravity planet
-    in SurfaceWeight $ otherMass * sg
+    let sg = surfaceGravity planet
+    in otherMass * sg
 
 
 runPlanets :: Double -> IO ()
 runPlanets sampleWeight =
-    let (SurfaceGravity earthSurfaceGravity) = surfaceGravity EARTH
+    let earthSurfaceGravity = surfaceGravity EARTH
 
         massOnEarth :: Mass
         massOnEarth = Mass $ sampleWeight / earthSurfaceGravity
