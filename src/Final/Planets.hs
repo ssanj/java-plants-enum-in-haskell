@@ -1,0 +1,85 @@
+module Final.Planets(runPlanets) where
+
+import Data.Foldable (traverse_)
+
+-- Haskell implementation of the Java Enum: Planets example
+-- https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html
+
+import Data.Foldable (traverse_)
+
+
+data Planet = MERCURY
+            | VENUS
+            | EARTH
+            | MARS
+            | JUPITER
+            | SATURN
+            | URANUS
+            | NEPTUNE deriving (Enum, Bounded, Show)
+
+
+newtype Mass = Mass Double
+
+
+newtype Radius = Radius Double
+
+
+gConstant :: Double
+gConstant = 6.67300E-11
+
+
+radius :: Planet -> Radius
+radius MERCURY = Radius 2.4397e6
+radius VENUS   = Radius 6.0518e6
+radius EARTH   = Radius 6.37814e6
+radius MARS    = Radius 3.3972e6
+radius JUPITER = Radius 7.1492e7
+radius SATURN  = Radius 6.0268e7
+radius URANUS  = Radius 2.5559e7
+radius NEPTUNE = Radius 2.4746e7
+
+
+mass :: Planet -> Mass
+mass MERCURY = Mass 3.303e+23
+mass VENUS   = Mass 4.869e+24
+mass EARTH   = Mass 5.976e+24
+mass MARS    = Mass 6.421e+23
+mass JUPITER = Mass 1.9e+27
+mass SATURN  = Mass 5.688e+26
+mass URANUS  = Mass 8.686e+25
+mass NEPTUNE = Mass 1.024e+26
+
+
+newtype Gravity = Gravity Double deriving Show
+
+newtype Weight = Weight Double deriving Show
+
+
+surfaceGravity :: Planet -> Gravity
+surfaceGravity planet =
+    let (Mass mass')     = mass planet
+        (Radius radius') = radius planet
+    in Gravity $ gConstant * mass' / (radius' * radius')
+
+
+surfaceWeight :: Mass -> Planet -> Weight
+surfaceWeight (Mass otherMass) planet =
+    let (Gravity sg)= surfaceGravity planet
+    in Weight $ otherMass * sg
+
+
+runPlanets :: Double -> IO ()
+runPlanets sampleWeight =
+    let (Gravity earthSurfaceGravity) = surfaceGravity EARTH
+
+        massOnEarth :: Mass
+        massOnEarth = Mass $ sampleWeight / earthSurfaceGravity
+
+        planetToWeight :: [(Planet, Weight)]
+        planetToWeight = map (\p -> (p, surfaceWeight massOnEarth p)) [minBound .. maxBound]
+
+        render :: (Planet, Weight) -> String
+        render (p, weight) = "Your weight on " <> show p <> " is " <> (show weight)
+
+    in mapM_ (putStrLn . render) planetToWeight
+
